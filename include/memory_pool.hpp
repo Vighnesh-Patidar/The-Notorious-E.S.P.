@@ -18,6 +18,9 @@ class MemoryPool
 public :
     uint8_t* acquire();
     void release(uint8_t*);
+    uint8_t get_index(uint8_t* slot);
+    uint8_t* get_slot(uint8_t index);
+
 
 };
 

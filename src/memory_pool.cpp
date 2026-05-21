@@ -25,3 +25,14 @@ void MemoryPool::release(uint8_t* slot)
     bitmap[index] = false;
 
 }
+
+uint8_t MemoryPool::get_index(uint8_t* slot)
+{
+    int offset = slot - pool_array[0];
+    return offset / FRAME_SLOT_SIZE;
+}
+
+uint8_t* MemoryPool::get_slot(uint8_t index)
+{
+    return pool_array[index];
+}

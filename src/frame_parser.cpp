@@ -1,4 +1,5 @@
 #include "frame_parser.hpp"
+#include "c_types.h"
 
 ParsedFrame* FrameParser::parse(const uint8_t* buf, const uint16_t len)
 {
@@ -50,7 +51,7 @@ ParsedFrame* FrameParser::parse(const uint8_t* buf, const uint16_t len)
     uint16_t src_port = ((uint16_t)buf[transport_offset] << 8) | (uint16_t)buf[transport_offset+1];
     uint16_t dst_port = ((uint16_t)buf[transport_offset+2] << 8) | (uint16_t)buf[transport_offset+3];
 
-    uint8_t* payload = buf + transport_offset + transport_header_len;
+    const uint8_t* payload = buf + transport_offset + transport_header_len;
     uint16_t payload_length = len - transport_offset - transport_header_len;
     static ParsedFrame result;
     result.dst_ip = dst_ip;

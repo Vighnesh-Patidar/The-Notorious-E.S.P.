@@ -1,4 +1,7 @@
 #include "filter_engine.hpp"
+#include "osapi.h"
+#include "ets_sys.h"
+extern "C" int ets_printf(const char* fmt, ...);
 
 Rule FilterEngine::rules[MAX_RULES];
 uint8_t FilterEngine::rule_count = 0;
@@ -32,7 +35,7 @@ void FilterEngine::apply(const ParsedFrame* frame)
             switch (rule.action)
             {
                 case Action::LOG:
-                    os_printf("MATCH: src=%08x dst_port=%d proto=%d\n",frame->src_ip, frame->dst_port, frame->protocol);
+                    ets_printf("MATCH: src=%08x dst_port=%d proto=%d\n",frame->src_ip, frame->dst_port, frame->protocol);
                     break;
                 case Action::COUNT:
                     unmatched_count++;  
@@ -44,6 +47,6 @@ void FilterEngine::apply(const ParsedFrame* frame)
         }
     }
     unmatched_count++;
-    os_printf("WARN: unmatched frame src=%08x proto=%d\n",
+    ets_printf("WARN: unmatched frame src=%08x proto=%d\n",
     frame->src_ip, frame->protocol);
 }

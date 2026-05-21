@@ -7,7 +7,7 @@ AR = $(TOOLCHAIN_PREFIX)ar
 LD = $(TOOLCHAIN_PREFIX)gcc
 
 # --- Compiler Flags ---
-COMMON_FLAGS = -mlongcalls -mtext-section-literals -Os -I$(SDK_ROOT)/include -I$(SDK_ROOT)/driver_lib/include -Iinclude
+COMMON_FLAGS = -mlongcalls -mtext-section-literals -Os -I$(SDK_ROOT)/include -I$(SDK_ROOT)/driver_lib/include -Iinclude -I$(HOME)/esp/xtensa-lx106-elf/xtensa-lx106-elf/include
 CFLAGS = $(COMMON_FLAGS)
 CXXFLAGS = $(COMMON_FLAGS) -fno-exceptions -fno-rtti -std=c++11
 
@@ -18,6 +18,10 @@ LDFLAGS += -Wl,-static
 LDFLAGS += -L$(SDK_ROOT)/lib
 LDFLAGS += -lmain -lnet80211 -lwpa -llwip -lpp -lphy
 LDFLAGS += -T$(SDK_ROOT)/ld/eagle.app.v6.ld
+LDFLAGS += -lgcc
+LDFLAGS += -lcrypto
+LDFLAGS += -lmain -lnet80211 -lwpa -llwip -lpp -lphy -lcrypto -lgcc
+LDFLAGS += -lc
 
 # --- Source and Object Files ---
 SRC = $(wildcard src/*.cpp)

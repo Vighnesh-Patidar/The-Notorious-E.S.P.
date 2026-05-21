@@ -2,12 +2,14 @@
 #include "filter_engine.hpp"
 #include "frame_parser.hpp"
 #include "ring_buffer.hpp"
-#include "user_interface.h"
+extern "C" {
+    #include "user_interface.h"
+    }
 
 MemoryPool memory_pool;
 RingBuffer ring_buffer;
 
-void promisc_cb(uint8_t* buf, uint16_t len)
+extern "C" void promisc_cb(uint8_t* buf, uint16_t len)
 {
     uint8_t* slot = memory_pool.acquire();
     if(slot == nullptr) return;
@@ -15,14 +17,16 @@ void promisc_cb(uint8_t* buf, uint16_t len)
     uint8_t index = memory_pool.get_index(slot);
     ring_buffer.push(index);
 }
+extern "C" void user_pre_init(void)
+{
+}
 
-
-void user_init()
+extern "C" void user_init()
 {
     wifi_set_opmode(STATION_MODE);
 
 
-    wifi_set_promiscuous_recv_cb(promisc_cb);
+    wifi_set_promiscuous_rx_cb(promisc_cb);
     wifi_promiscuous_enable(1);
 
     while(true)

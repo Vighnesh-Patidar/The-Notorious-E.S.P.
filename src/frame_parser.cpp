@@ -1,10 +1,7 @@
 #include "frame_parser.hpp"
 #include "c_types.h"
 
-// NONOS_SDK promisc buffer prefix: 12-byte RxControl metadata, then the
-// actual 802.11 frame. For sniffer_buf (len==128) the 802.11 head is
-// truncated to 112 bytes; for raw RxControl-only deliveries (len==12)
-// there is no frame data at all.
+
 static constexpr uint16_t RX_CTRL_LEN = 12;
 
 ParsedFrame* FrameParser::parse(const uint8_t* raw_buf, const uint16_t raw_len)
@@ -14,14 +11,12 @@ ParsedFrame* FrameParser::parse(const uint8_t* raw_buf, const uint16_t raw_len)
     uint16_t len = raw_len - RX_CTRL_LEN;
 
     uint32_t offset = 0;
-    //control frame data
     uint8_t type = (buf[0] >> 2) & 0x03;
     uint8_t subtype = (buf[0] >> 4) & 0x0F;
     (void)subtype;
 
     if(type != 2) return nullptr;
 
-    //header offset
     if(offset + 20 > len) return nullptr;
     uint8_t to_ds = buf[1] & 0x01;
     uint8_t from_ds = (buf[1] >> 1) & 0x01;
@@ -31,9 +26,8 @@ ParsedFrame* FrameParser::parse(const uint8_t* raw_buf, const uint16_t raw_len)
     } else {
         offset = 24;
     }
-    offset += 8; // LLC/SNAP header before IPv4
+    offset += 8; 
 
-    // IPV4 parsing
     if(offset + 20 > len) return nullptr;
     if(((buf[offset] >> 4) & 0x0F)!= 4) return nullptr;
 
@@ -43,7 +37,6 @@ ParsedFrame* FrameParser::parse(const uint8_t* raw_buf, const uint16_t raw_len)
     uint32_t dst_ip = ((uint32_t)buf[offset + 16] << 24) | ((uint32_t)buf[offset + 17] << 16) | ((uint32_t)buf[offset + 18] << 8)| ((uint32_t)buf[offset + 19]);
 
 
-    // transport layer
     uint32_t transport_offset = offset + ihl;
     if (transport_offset + 20 > len) return nullptr;
     uint8_t transport_header_len;
@@ -52,7 +45,7 @@ ParsedFrame* FrameParser::parse(const uint8_t* raw_buf, const uint16_t raw_len)
     } else if(protocol == 17) {
         transport_header_len = 8;
     } else {
-        return nullptr;  // unsupported protocol
+        return nullptr;  
     }
     uint16_t src_port = ((uint16_t)buf[transport_offset] << 8) | (uint16_t)buf[transport_offset+1];
     uint16_t dst_port = ((uint16_t)buf[transport_offset+2] << 8) | (uint16_t)buf[transport_offset+3];

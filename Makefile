@@ -51,8 +51,14 @@ clean:
 
 # 5. Flash rule
 flash: $(TARGET)
-	esptool.py --port /dev/ttyUSB0 elf2image $(TARGET)
-	esptool.py --port /dev/ttyUSB0 write_flash 0x00000 build/packet_inspector-0x00000.bin 0x10000 build/packet_inspector-0x10000.bin
+	esptool --port /dev/ttyUSB0 elf2image --flash_size 4MB --flash_mode qio --flash_freq 40m $(TARGET)
+	esptool --port /dev/ttyUSB0 write_flash --flash_size 4MB --flash_mode qio --flash_freq 40m \
+		0x00000 build/packet_inspector.elf-0x00000.bin \
+		0x10000 build/packet_inspector.elf-0x10000.bin \
+		0x3FB000 $(SDK_ROOT)/bin/blank.bin \
+		0x3FC000 $(SDK_ROOT)/bin/esp_init_data_default_v08.bin \
+		0x3FD000 $(SDK_ROOT)/bin/blank.bin \
+		0x3FE000 $(SDK_ROOT)/bin/blank.bin
 
 # 6. Monitor rule
 monitor:

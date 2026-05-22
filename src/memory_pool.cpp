@@ -2,6 +2,7 @@
 
 bool MemoryPool::bitmap[POOL_DEPTH];
 uint8_t MemoryPool::pool_array[POOL_DEPTH][FRAME_SLOT_SIZE];
+uint16_t MemoryPool::slot_lengths[POOL_DEPTH];
 
 
 uint8_t* MemoryPool::acquire()
@@ -35,4 +36,16 @@ uint8_t MemoryPool::get_index(uint8_t* slot)
 uint8_t* MemoryPool::get_slot(uint8_t index)
 {
     return pool_array[index];
+}
+
+void MemoryPool::set_length(uint8_t index, uint16_t len)
+{
+    if (index >= POOL_DEPTH) return;
+    slot_lengths[index] = len;
+}
+
+uint16_t MemoryPool::get_length(uint8_t index)
+{
+    if (index >= POOL_DEPTH) return 0;
+    return slot_lengths[index];
 }

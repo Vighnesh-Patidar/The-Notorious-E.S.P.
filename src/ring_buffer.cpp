@@ -1,11 +1,5 @@
 #include "ring_buffer.hpp"
 
-RingBuffer::RingBuffer()
-{
-    RingBuffer::head = 0;
-    RingBuffer::tail = 0;
-}
-
 bool RingBuffer::push(uint8_t index)
 {
     if(((head+1) & (RING_BUFFER_SIZE-1)) == tail)

@@ -3,7 +3,6 @@
 
 #include "c_types.h"
 #include "frame_parser.hpp"
-#include "osapi.h"
 
 constexpr uint8_t MAX_RULES = 16;
 enum class Action: uint8_t{LOG, COUNT, IGNORE};

@@ -51,13 +51,30 @@ static void consumer_task(os_event_t* e)
             ets_printf("rx proto=%u %u.%u.%u.%u:%u -> %u.%u.%u.%u:%u len=%u\n",
                 frame->protocol,
                 (frame->src_ip >> 24) & 0xFF, (frame->src_ip >> 16) & 0xFF,
-                (frame->src_ip >> 8) & 0xFF, frame->src_ip & 0xFF,
+                (frame->src_ip >> 8)  & 0xFF,  frame->src_ip & 0xFF,
                 frame->src_port,
                 (frame->dst_ip >> 24) & 0xFF, (frame->dst_ip >> 16) & 0xFF,
-                (frame->dst_ip >> 8) & 0xFF, frame->dst_ip & 0xFF,
+                (frame->dst_ip >> 8)  & 0xFF,  frame->dst_ip & 0xFF,
                 frame->dst_port,
                 frame->payload_length);
-        }
+        
+            uint16_t print_len = frame->payload_length > 64 ? 64 : frame->payload_length;
+            for (uint16_t i = 0; i < print_len; i += 16) {
+                ets_printf("%04x  ", i);
+                for (uint16_t j = i; j < i + 16; j++) {
+                    if (j < print_len) ets_printf("%02x ", frame->payload[j]);
+                    else               ets_printf("   ");
+                }
+                ets_printf(" |");
+                for (uint16_t j = i; j < i + 16 && j < print_len; j++) {
+                    uint8_t c = frame->payload[j];
+                    ets_printf("%c", (c >= 0x20 && c < 0x7f) ? c : '.');
+                }
+                ets_printf("|\n");
+            }
+            if (frame->payload_length > 64)
+                ets_printf("  ...+%u bytes\n", frame->payload_length - 64);
+        } 
         FilterEngine::apply(frame);
         memory_pool.release(ptr);
     }
@@ -89,9 +106,10 @@ extern "C" void promisc_cb(uint8_t* buf, uint16_t len)
     uint8_t* slot = memory_pool.acquire();
     if (slot == nullptr) return;
     if (len > FRAME_SLOT_SIZE) len = FRAME_SLOT_SIZE;
-    memcpy(slot, buf, len);
+    if(len <= 12) { memory_pool.release(slot); return; }
+    memcpy(slot, buf + 12, len - 12);
     uint8_t index = memory_pool.get_index(slot);
-    memory_pool.set_length(index, len);
+    memory_pool.set_length(index, len-12);
     if (!ring_buffer.push(index))
     {
         memory_pool.release(slot);
@@ -135,7 +153,7 @@ static void wifi_init_done_cb(void)
 
     ets_timer_disarm(&channel_timer);
     ets_timer_setfn(&channel_timer, hop_channel, nullptr);
-    ets_timer_arm_new(&channel_timer, 400, true, true);
+    ets_timer_arm_new(&channel_timer, 2000, true, true);
 }
 
 extern "C" void user_init()

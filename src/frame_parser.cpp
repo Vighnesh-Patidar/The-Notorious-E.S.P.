@@ -15,7 +15,7 @@ ParsedFrame* FrameParser::parse(const uint8_t* raw_buf, const uint16_t raw_len)
     uint8_t subtype = (buf[0] >> 4) & 0x0F;
     (void)subtype;
 
-    if(type != 2) return nullptr;
+    // if(type != 2) return nullptr;
 
     if(offset + 20 > len) return nullptr;
     uint8_t to_ds = buf[1] & 0x01;

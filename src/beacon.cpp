@@ -11,11 +11,8 @@ void Beacon::send(const uint8_t* payload, uint8_t len)
     uint8_t buf[128];
     uint8_t pos = 0;
 
-    // Frame Control - Data Frame (Type 2, Subtype 0)
-    // 0x08, 0x00 indicates a standard STA-to-STA data frame
     buf[pos++] = 0x08; buf[pos++] = 0x00;
     
-    // Duration (Handled by hardware, set to 0)
     buf[pos++] = 0x00; buf[pos++] = 0x00;
     
     // Destination MAC - Broadcast

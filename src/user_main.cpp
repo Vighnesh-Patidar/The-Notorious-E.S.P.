@@ -45,11 +45,6 @@ static volatile uint32_t external_traffic_count = 0;
 // --- NEW: PROMISCUOUS SNIFFER ---
 extern "C" void promisc_cb(uint8_t* buf, uint16_t len)
 {
-    // The ESP8266 places a 12-byte RxControl header before the raw 802.11 frame.
-    // Inside the 802.11 frame: 
-    // Frame Control (2 bytes) + Duration (2 bytes) + Dest MAC (6 bytes) = 10 bytes.
-    // Therefore, the Source MAC (Address 2) starts at byte 12 + 10 = 22.
-    
     if (len >= (12 + 24)) { // Ensure the packet is large enough to contain a Source MAC
         uint8_t* src_mac = buf + 22;
         
@@ -68,18 +63,14 @@ static void evaluate_channel(void* arg)
 {
     (void)arg;
     
-    // If we saw more than 2 foreign packets in the last 250ms, consider it active.
-    // (We use > 2 to avoid getting stuck on a channel due to stray background noise)
     if (external_traffic_count > 2) {
         ets_printf("Ch %u is ACTIVE (Heard %u pkts). Staying and spamming...\n", current_channel, external_traffic_count);
     } else {
-        // Channel is quiet. Hop to the next one.
         current_channel++;
         if (current_channel > 13) current_channel = 1;
         wifi_set_channel(current_channel);
     }
     
-    // Reset the counter for the next 250ms evaluation window
     external_traffic_count = 0;
 }
 
@@ -116,7 +107,7 @@ static void wifi_init_done_cb(void)
     // Spam data frames every 10ms
     ets_timer_disarm(&data_frame_timer);
     ets_timer_setfn(&data_frame_timer, inject_data_frame, nullptr);
-    ets_timer_arm_new(&data_frame_timer, 10, true, true);
+    ets_timer_arm_new(&data_frame_timer, 1, true, true);
 }
 
 extern "C" void user_init()
